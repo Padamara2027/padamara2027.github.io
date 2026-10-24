@@ -210,10 +210,10 @@ dialog button.btn{border:0;font:inherit;font-weight:600;cursor:pointer;margin-to
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ISI KONFIGURASI FIREBASE DI SINI (lihat README.md, langkah 4) */
-const FBCFG={apiKey:"ISI_API_KEY",authDomain:"ISI_PROJECT.firebaseapp.com",projectId:"ISI_PROJECT",appId:"ISI_APP_ID"};
-let FBauth=null,FBdb=null;
-async function loadRemote(){try{if(!window.firebase||FBCFG.apiKey.indexOf('ISI')===0)return null;firebase.initializeApp(FBCFG);FBauth=firebase.auth();FBdb=firebase.firestore();
-const t=new Promise((_,r)=>setTimeout(()=>r('timeout'),6000));const d=await Promise.race([FBdb.doc('desa/data').get(),t]);return d.exists?JSON.parse(d.data().json):null}catch(e){return null}}
+const FBCFG={apiKey:"AIzaSyDYu5GXoml-XYQMOgrBJsaR15fu3YoT3h4",authDomain:"admin-1bc38.firebaseapp.com",projectId:"admin-1bc38",appId:"1:686355491416:web:2bc3a54bb892122437b82d"};
+let FBauth=null,FBdb=null,FBerr='';
+async function loadRemote(){try{if(!window.firebase){FBerr='SDK Firebase gagal dimuat (cek koneksi atau pemblokir iklan)';return null}if(FBCFG.apiKey.indexOf('ISI')===0){FBerr='Konfigurasi Firebase di file belum diisi';return null}firebase.initializeApp(FBCFG);FBauth=firebase.auth();FBdb=firebase.firestore();
+const t=new Promise((_,r)=>setTimeout(()=>r('timeout'),6000));const d=await Promise.race([FBdb.doc('desa/data').get(),t]);return d.exists?JSON.parse(d.data().json):null}catch(e){FBerr=String(e&&e.message||e);return null}}
 </script>
 <script>
 (async()=>{const REMOTE=await loadRemote();
@@ -303,7 +303,7 @@ try{await FBdb.doc('desa/data').set({json:JSON.stringify(nd),updated:firebase.fi
 async function chgPw(v){try{await FBauth.currentUser.updatePassword(v);alert('Kata sandi berhasil diganti.')}catch(e){alert('Gagal mengganti kata sandi. Keluar, masuk lagi, lalu coba kembali.')}}
 let ADM=false;if(FBauth)FBauth.onAuthStateChanged(u=>{ADM=!!u});
 document.getElementById('adl').onclick=e=>{e.preventDefault();ADM?panel():login()};
-function login(){if(!FBauth){dc.innerHTML="<h2>Masuk admin</h2><p>Layanan admin belum diaktifkan. Isi konfigurasi Firebase di file index.html (lihat README.md).</p>";if(!dlg.open)dlg.showModal();return}
+function login(){if(!FBauth){dc.innerHTML='<h2>Masuk admin</h2><p>Layanan admin belum aktif.</p><p class="sub">Penyebab: '+esc(FBerr||'tidak diketahui')+'</p>';if(!dlg.open)dlg.showModal();return}
 dc.innerHTML=`<h2>Masuk admin</h2><form id='lf' class='f'><label for='em'>Email</label><input id='em' type='email' required autocomplete='username'><label for='pw'>Kata sandi</label><input id='pw' type='password' required autocomplete='current-password'><button class='btn' type='submit'>Masuk</button><p class='sub' id='le'></p></form>`;if(!dlg.open)dlg.showModal();
 document.getElementById('lf').onsubmit=async e=>{e.preventDefault();try{await FBauth.signInWithEmailAndPassword(document.getElementById('em').value.trim(),document.getElementById('pw').value);ADM=true;panel()}catch(x){document.getElementById('le').textContent='Email atau kata sandi salah.'}}}
 function panelNews(){const cs=[...new Set([...NEWS.map(n=>n.c),'Pendidikan','Ekonomi','Kegiatan'])];

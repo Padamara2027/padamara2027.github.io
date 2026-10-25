@@ -97,20 +97,40 @@ dialog button.btn{border:0;font:inherit;font-weight:600;cursor:pointer;margin-to
 @media(max-width:900px){.burger{display:block}.mn{display:none;width:100%;flex-direction:column;align-items:stretch;padding-bottom:10px;max-height:calc(100vh - 80px);overflow:auto}.mn.open{display:flex}.sub-m{position:static;box-shadow:none;border:0;border-left:2px solid var(--line);border-radius:0;margin-left:10px;min-width:0}.dd{width:100%}.mn button.g{width:100%;text-align:left}}
 .brand{display:flex;align-items:center;gap:10px;line-height:1.15}.brand img{height:40px;width:auto}.brand small{display:block;font:400 11px 'Public Sans',sans-serif;color:var(--muted)}
 .hlogo{display:flex;align-items:center;gap:14px;margin-bottom:20px}.hlogo img{height:84px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}.hlogo span{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.92;line-height:1.5}
+.hero h1{text-wrap:balance;max-width:18em;font-size:clamp(28px,6vw,52px);line-height:1.2}
+:root{--sh:0 1px 2px rgba(20,30,25,.06),0 8px 22px rgba(20,30,25,.07)}
+body{-webkit-font-smoothing:antialiased}
+header{box-shadow:0 6px 20px rgba(20,30,25,.05)}
+.topbar{background:var(--green);color:var(--onGreen);font-size:12.5px;letter-spacing:.02em}.topbar .wrap{padding-block:7px;display:flex;justify-content:space-between;gap:4px 14px;flex-wrap:wrap}
+.hero{background:linear-gradient(135deg,var(--green) 0%,var(--green2) 100%);padding:72px 0 68px}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 18%,rgba(255,255,255,.14),transparent 45%),repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 2px,transparent 2px 20px)}
+.hero .wrap{position:relative}
+section h2{position:relative;padding-bottom:14px;margin-bottom:14px}
+section h2::after{content:"";position:absolute;left:0;bottom:0;width:56px;height:4px;border-radius:2px;background:var(--gold)}
+.card{border-radius:10px;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s,border-color .15s}
+a.card:hover,button.card:hover{transform:translateY(-2px);border-color:var(--green2)}
+.panel{border-radius:12px;box-shadow:var(--sh)}
+.stats{background:transparent;border:0;gap:12px;box-shadow:none}
+.stat{background:var(--surface);border:1px solid var(--line)!important;border-radius:10px;box-shadow:var(--sh);padding:18px 16px}
+.btn{border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.pbar{background:var(--surface);border-bottom:1px solid var(--line)}.pbar .wrap{padding-block:12px;font-size:13.5px;color:var(--muted)}.pbar b{color:var(--green)}
+footer{padding:48px 0 32px}.flogo{display:flex;gap:12px;align-items:center;margin-bottom:10px}.flogo img{height:52px;width:auto}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
+<div class="topbar"><div class="wrap"><span>Situs resmi Pemerintah Desa Padamara</span><span>Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span></div></div>
 <header><div class="wrap bar">
 <a class="brand" href="#/beranda"><img data-logo alt="Lambang Kabupaten Purbalingga"><span>Desa Padamara<small>Kec. Padamara, Kab. Purbalingga</small></span></a>
 <button class="burger" id="bg" type="button" aria-label="Menu" aria-expanded="false">&#9776;</button>
 <div class="mn" id="mn" role="navigation" aria-label="Menu utama">
 <a data-p="beranda" href="#/beranda">Beranda</a><div class="dd"><button class="g" type="button" aria-haspopup="true">Profil &#9662;</button><div class="sub-m"><a data-p="sambutan" href="#/sambutan">Sambutan dan visi misi</a><a data-p="sejarah" href="#/sejarah">Sejarah desa</a><a data-p="wilayah" href="#/wilayah">Peta dan wilayah</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">Pemerintahan &#9662;</button><div class="sub-m"><a data-p="perangkat" href="#/perangkat">Perangkat desa</a><a data-p="perdes" href="#/perdes">Peraturan desa</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">Lembaga &#9662;</button><div class="sub-m"><a data-p="lembaga" href="#/lembaga">Semua lembaga</a><a data-p="lembaga-bpd" href="#/lembaga-bpd">BPD</a><a data-p="lembaga-lpmd" href="#/lembaga-lpmd">LPMD</a><a data-p="lembaga-kpmd" href="#/lembaga-kpmd">KPMD</a><a data-p="lembaga-rw" href="#/lembaga-rw">Rukun Warga / RW</a><a data-p="lembaga-rt" href="#/lembaga-rt">Rukun Tetangga / RT</a><a data-p="lembaga-pkk" href="#/lembaga-pkk">PKK</a><a data-p="lembaga-posyandu" href="#/lembaga-posyandu">Posyandu</a><a data-p="lembaga-posbindu" href="#/lembaga-posbindu">Posbindu</a><a data-p="lembaga-linmas" href="#/lembaga-linmas">Hansip / Linmas</a><a data-p="lembaga-karangtaruna" href="#/lembaga-karangtaruna">Karang Taruna</a><a data-p="lembaga-bumdes" href="#/lembaga-bumdes">BUMDes</a><a data-p="lembaga-gapoktan" href="#/lembaga-gapoktan">Gapoktan</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">Transparansi &#9662;</button><div class="sub-m"><a data-p="apbdes" href="#/apbdes">APBDes</a><a data-p="dokumen" href="#/dokumen">Dokumen publik</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">Data desa &#9662;</button><div class="sub-m"><a data-p="data-wilayah" href="#/data-wilayah">Data wilayah administratif</a><a data-p="data-wn" href="#/data-wn">Data warga negara</a><a data-p="data-umur" href="#/data-umur">Data kelompok umur</a><a data-p="data-darah" href="#/data-darah">Data golongan darah</a><a data-p="data-kelamin" href="#/data-kelamin">Data jenis kelamin</a><a data-p="data-agama" href="#/data-agama">Data agama</a><a data-p="data-kerja" href="#/data-kerja">Data pekerjaan</a><a data-p="data-pendidikan" href="#/data-pendidikan">Data pendidikan dalam KK</a><a data-p="data-balita" href="#/data-balita">Data balita</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">PPID &#9662;</button><div class="sub-m"><a data-p="ppid-struktur" href="#/ppid-struktur">Struktur PPID</a><a data-p="ppid-tugas" href="#/ppid-tugas">Tugas dan fungsi PPID</a><a data-p="ppid-profil" href="#/ppid-profil">Profil PPID desa</a><a data-p="ppid-info" href="#/ppid-info">Informasi publik</a><a data-p="ppid-prosedur" href="#/ppid-prosedur">Prosedur layanan</a></div></div><div class="dd"><button class="g" type="button" aria-haspopup="true">Layanan &#9662;</button><div class="sub-m"><a data-p="layanan" href="#/layanan">Layanan surat</a><a data-p="pengaduan" href="#/pengaduan">Pengaduan</a></div></div><a data-p="potensi" href="#/potensi">Potensi desa</a><a data-p="berita" href="#/berita">Berita</a><a data-p="galeri" href="#/galeri">Galeri</a><a data-p="kontak" href="#/kontak">Kontak</a>
 </div></div></header>
+<div class="pbar" id="pbar" hidden><div class="wrap" id="pbc"></div></div>
 
 <div class="hero" id="top" data-pg="beranda"><div class="wrap">
 <div class="hlogo"><img data-logo alt="Lambang Kabupaten Purbalingga"><span>Pemerintah Desa Padamara<br>Kecamatan Padamara, Kabupaten Purbalingga</span></div>
-<h1>Desa Padamara: terbuka, melayani, membangun bersama.</h1>
+<h1>Desa Padamara : Terbuka, Melayani, Membangun Bersama</h1>
 <p>Portal resmi Pemerintah Desa Padamara. Lihat penggunaan anggaran desa, ajukan layanan administrasi, dan ikuti kabar terbaru dari desa.</p>
 <a class="btn" href="#/apbdes">Lihat APBDes 2026</a><a class="btn alt" href="#/layanan">Layanan warga</a>
 </div>
@@ -233,7 +253,7 @@ dialog button.btn{border:0;font:inherit;font-weight:600;cursor:pointer;margin-to
 <section id="data-balita" data-pg="data-balita"><div class="wrap"><h2>Data balita</h2><p class="lead">Jumlah balita menurut usia.</p><div id="dbalita"></div><p class="note">Data bersumber dari pemerintah desa.</p></div></section>
 <dialog id='dlg'><button id='dx' class='x btn alt noprint' type='button'>Tutup</button><div id='dc'></div></dialog>
 <footer><div class="wrap fg">
-<div><h3>Pemerintah Desa Padamara</h3><p>Melayani dengan terbuka dan bertanggung jawab.</p></div>
+<div><div class="flogo"><img data-logo alt="Lambang Kabupaten Purbalingga"><h3 style="margin:0">Pemerintah Desa Padamara</h3></div><p>Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah.<br>Melayani dengan terbuka dan bertanggung jawab.</p></div>
 <div><h3>Pintasan</h3><a href="#/apbdes">APBDes</a><br><a href="#/layanan">Layanan warga</a><br><a href="#/dokumen">Dokumen publik</a></div>
 <div><p>© 2026 Pemerintah Desa Padamara.</p><p><a href="#" id="adl">Masuk admin</a></p></div>
 </div></footer>
@@ -410,7 +430,7 @@ function route(){let h=(location.hash||'').replace(/^#\/?/,'');h=LEG[h]||h;if(!R
 document.querySelectorAll('[data-pg]').forEach(e=>{e.hidden=!e.dataset.pg.split(' ').includes(h)});
 mn.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.p===h));
 mn.querySelectorAll('.dd').forEach(d=>d.classList.toggle('on',!!d.querySelector('a.on')));
-const cur=mn.querySelector('a.on');document.title=(cur&&h!=='beranda'?cur.textContent+' | ':'')+'Pemerintah Desa Padamara';closeM();window.scrollTo(0,0)}
+const cur=mn.querySelector('a.on');document.title=(cur&&h!=='beranda'?cur.textContent+' | ':'')+'Pemerintah Desa Padamara';closeM();const pb=document.getElementById('pbar');if(h==='beranda'){pb.hidden=true}else{const gb=mn.querySelector('.dd.on>button.g'),gt=gb?gb.textContent.replace(/[^\w\s]/g,'').trim():'';pb.hidden=false;document.getElementById('pbc').innerHTML='<a href="#/beranda" style="color:var(--green)">Beranda</a> &rsaquo; '+(gt?gt+' &rsaquo; ':'')+'<b>'+(cur?cur.textContent:'')+'</b>'}window.scrollTo(0,0)}
 bg.onclick=()=>{const o=mn.classList.toggle('open');bg.setAttribute('aria-expanded',o)};
 mn.querySelectorAll('button.g').forEach(b=>b.onclick=e=>{e.stopPropagation();const d=b.parentNode,was=d.classList.contains('open');mn.querySelectorAll('.dd').forEach(x=>x.classList.remove('open'));if(!was)d.classList.add('open')});
 document.addEventListener('click',()=>mn.querySelectorAll('.dd').forEach(x=>x.classList.remove('open')));

@@ -115,11 +115,17 @@ a.card:hover,button.card:hover{transform:translateY(-2px);border-color:var(--gre
 .btn{border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .pbar{background:var(--surface);border-bottom:1px solid var(--line)}.pbar .wrap{padding-block:12px;font-size:13.5px;color:var(--muted)}.pbar b{color:var(--green)}
 footer{padding:48px 0 32px}.flogo{display:flex;gap:12px;align-items:center;margin-bottom:10px}.flogo img{height:52px;width:auto}
+.topbar{overflow:hidden;white-space:nowrap}
+.mq{display:inline-flex;padding-block:7px;animation:mq 40s linear infinite}
+.mq span{padding-right:4rem}
+.topbar:hover .mq,.topbar:active .mq{animation-play-state:paused}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.mq{animation:none}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="wrap"><span>Situs resmi Pemerintah Desa Padamara</span><span>Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span></div></div>
+<div class="topbar" aria-label="Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah"><div class="mq"><span>Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span><span aria-hidden="true">Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span><span aria-hidden="true">Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span><span aria-hidden="true">Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span><span aria-hidden="true">Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span><span aria-hidden="true">Situs resmi Pemerintah Desa Padamara, Kecamatan Padamara, Kabupaten Purbalingga, Jawa Tengah</span></div></div>
 <header><div class="wrap bar">
 <a class="brand" href="#/beranda"><img data-logo alt="Lambang Kabupaten Purbalingga"><span>Desa Padamara<small>Kec. Padamara, Kab. Purbalingga</small></span></a>
 <button class="burger" id="bg" type="button" aria-label="Menu" aria-expanded="false">&#9776;</button>

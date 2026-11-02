@@ -364,7 +364,8 @@ function fld(f){const[i,l,t,o]=f;const c=t==='select'?`<select id='f_${i}' name=
 function openSv(k){const s=SV.find(x=>x.k===k);const fs=[...BASE,...(s.x||[]),...(s.nk?[]:[['kep','Keperluan surat']])];
 dc.innerHTML=`<h2>${s.t}</h2><p class='sub'>Berkas yang dibawa ke kantor desa: ${s.b}</p><form id='sf' class='f'>${fs.map(fld).join('')}<button class='btn' type='submit'>Buat surat</button></form>`;
 if(!dlg.open)dlg.showModal();
-document.getElementById('sf').onsubmit=e=>{e.preventDefault();const v={};new FormData(e.target).forEach((a,b)=>v[b]=esc(String(a).trim()));showLetter(s,v)}}
+afInit(s.k);
+document.getElementById('sf').onsubmit=e=>{e.preventDefault();const v={};new FormData(e.target).forEach((a,b)=>v[b]=esc(String(a).trim()));window._lv={k:s.k,v};showLetter(s,v)}}
 function showLetter(s,v){const fm={day:'numeric',month:'long',year:'numeric'};const now=new Date();const today=now.toLocaleDateString('id-ID',fm);const ro=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][now.getMonth()];
 const lahir=new Date(v.tgl+'T00:00:00').toLocaleDateString('id-ID',fm);const end=new Date(now);end.setMonth(end.getMonth()+1);const until=end.toLocaleDateString('id-ID',fm);
 const p3=x=>String(x).replace(/\D/g,'').padStart(3,'0');
@@ -598,14 +599,14 @@ absRender();
 
 /* ===== PENGADUAN: KIRIM LANGSUNG ===== */
 function pushPeng(r){const u=ND.sheet&&ND.sheet.script;if(!u||!/^https:\/\/script\.google\.com\//.test(u))return;fetch(u,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({type:'pengaduan',waktu:new Date().toLocaleString('id-ID'),kode:r.kode,nama:r.nama,kontak:r.kontak,kategori:r.kategori,isi:r.isi})}).catch(()=>{})}
-document.getElementById('fm').onsubmit=async e=>{e.preventDefault();const f=e.target,v=n=>f.elements[n].value.trim(),o=document.getElementById('fout'),btn=f.querySelector('button[type=submit]');o.hidden=false;
+document.getElementById('fm').onsubmit=async e=>{e.preventDefault();const f=e.target,v=n=>f.elements[n].value.trim(),o=document.getElementById('fout'),btn=f.querySelector('button[type=submit]');o.hidden=false;const keep=!document.getElementById('pgs')||document.getElementById('pgs').checked;
 const isi=v('isi');if(isi.length<10){o.textContent='Isi pengaduan minimal 10 karakter.';return}
 const kode='PGD'+Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b%32]).join('');
 const rec={nama:v('nama').slice(0,100),kontak:v('kontak').slice(0,100),kategori:v('kat'),isi:isi.slice(0,2000),kode,status:'baru',ts:window.firebase&&FBdb?firebase.firestore.FieldValue.serverTimestamp():null};
 if(!FBdb){const body='Kode: '+kode+'\nKategori: '+rec.kategori+'\nNama: '+(rec.nama||'Tanpa nama')+'\nKontak: '+(rec.kontak||'-')+'\n\n'+rec.isi;o.innerHTML=`<p>Layanan kirim langsung belum aktif. Kirim lewat email:</p><p><a class='btn' href='mailto:${I.email}?subject=${encodeURIComponent('Pengaduan '+kode)}&body=${encodeURIComponent(body)}'>Kirim lewat email</a></p>`;return}
 btn.disabled=true;o.textContent='Mengirim...';
 try{await FBdb.collection('pengaduan').doc(kode).set(rec)}catch(x){btn.disabled=false;o.textContent='Gagal mengirim ('+(x.code||'error')+'). Coba lagi atau hubungi kantor desa.';return}
-pushPeng(rec);f.reset();btn.disabled=false;
+pushPeng(rec);if(keep){try{localStorage.setItem('pdm_pgd',JSON.stringify({nama:rec.nama,kontak:rec.kontak}))}catch(e){}}f.reset();pgFill();btn.disabled=false;
 const wa=waNum(I.wa);if(wa){try{window.open('https://wa.me/'+wa+'?text='+encodeURIComponent('Halo Pemdes Padamara, saya mengirim pengaduan (kode '+kode+').\nKategori: '+rec.kategori+'\n'+rec.isi.slice(0,300)),'_blank')}catch(e){}}
 o.innerHTML=`<p><b>Pengaduan terkirim ke pemerintah desa.</b></p><p>Kode pengaduan Anda: <b>${kode}</b><br><span class='sub'>Simpan kode ini untuk mengecek status di bagian bawah.</span></p>${wa?`<p><a class='btn' href='https://wa.me/${wa}?text=${encodeURIComponent('Halo Pemdes Padamara, saya mengirim pengaduan dengan kode '+kode)}' target='_blank' rel='noopener'>Beri tahu lewat WhatsApp</a></p>`:''}`};
 document.querySelector('#pengaduan .two>div').insertAdjacentHTML('beforeend',`<div class='panel f' style='margin-top:20px'><h3>Cek status pengaduan</h3><label for='ck'>Kode pengaduan</label><input id='ck' placeholder='contoh: PGDABCD2345'><button class='btn alt' id='cb' type='button' style='color:var(--ink)'>Cek status</button><div id='cr' class='sub' style='margin-top:10px'></div></div>`);
@@ -622,21 +623,47 @@ const rand8=()=>Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>'ABCDEFG
 const un=x=>String(x==null?'':x).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&');
 const waNum=x=>String(x||'').replace(/\D/g,'').replace(/^0/,'62');
 function pushPrm(r){const u=ND.sheet&&ND.sheet.script;if(!u||!/^https:\/\/script\.google\.com\//.test(u))return;fetch(u,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({type:'permohonan',waktu:new Date().toLocaleString('id-ID'),kode:r.kode,jenis:r.jenisT,nama:un(r.nama),hp:un(r.hp)})}).catch(()=>{})}
-async function kirimSurat(s,v){const o=document.getElementById('krs'),b=document.getElementById('kr');const kode='SRT'+rand8(),wa=waNum(I.wa);let saved=false;b.disabled=true;o.textContent='Mengirim...';
+async function kirimSurat(s,v){const o=document.getElementById('krs'),b=document.getElementById('kr');saveProfile(v);const kode='SRT'+rand8(),wa=waNum(I.wa);let saved=false;b.disabled=true;o.textContent='Mengirim...';
 if(FBdb&&window.firebase){try{await FBdb.collection('permohonan').doc(kode).set({kode,jenis:s.k,nama:String(v.nama).slice(0,100),hp:String(v.hp).slice(0,30),data:v,status:'baru',ts:firebase.firestore.FieldValue.serverTimestamp()});saved=true}catch(e){}}
 if(saved)pushPrm({kode,jenisT:s.t,nama:v.nama,hp:v.hp});
 let msg;if(saved){msg='Halo Pemdes Padamara, saya mengajukan '+s.t+' (kode '+kode+') atas nama '+un(v.nama)+'. Mohon diproses. No. HP: '+un(v.hp)}
 else{const F=[...BASE,...(s.x||[]),['kep','Keperluan']];msg='Permohonan '+s.t+'\n'+F.filter(f=>v[f[0]]).map(f=>f[1].replace(/\s*\(.*$/,'')+': '+un(v[f[0]])).join('\n')}
 if(wa){try{window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank')}catch(e){}}
 o.innerHTML=(saved?`<p><b>Permohonan tersimpan di sistem pemdes.</b> Kode: ${kode}</p>`:`<p class='sub'>Permohonan belum tersimpan di sistem (layanan online belum aktif). Kirim lewat WhatsApp atau cetak dan bawa ke kantor desa.</p>`)+(wa?`<p><a class='btn' target='_blank' rel='noopener' href='https://wa.me/${wa}?text=${encodeURIComponent(msg)}'>Buka WhatsApp dan kirim</a></p><p class='sub'>Jika WhatsApp tidak terbuka sendiri, tekan tombol di atas, lalu tekan Kirim di WhatsApp. Pesan sudah terisi.</p>`:`<p class='sub'>Nomor WhatsApp pemdes belum diisi admin.</p>`)}
+function pesanStatus(kode,st){const sd=(st==='selesai'||st==='siap diambil');return 'Halo, permohonan surat Anda (kode '+kode+') statusnya: '+st+'.'+(sd?'\n\nMohon untuk diambil di Balai Pemerintah Desa Padamara':'')+'\n\nTerima kasih. ☺️🙏'}
 async function panelPm(){dc.innerHTML=nav('prm')+`<h2>Permohonan surat</h2><p class='sub'>50 permohonan terbaru dari warga. Ubah status, cetak surat, atau hubungi warga lewat WhatsApp.</p><div id='pml'>Memuat...</div>`;wire();
 const L=document.getElementById('pml');let ds=[];try{const q=await FBdb.collection('permohonan').orderBy('ts','desc').limit(50).get();ds=q.docs}catch(e){L.textContent='Gagal memuat. Pastikan Anda masuk sebagai admin dan aturan Firestore sudah diperbarui.';return}
 const ST=['baru','diproses','siap diambil','selesai'];
 L.innerHTML=ds.length?ds.map((d,i)=>{const x=d.data(),sv=SV.find(z=>z.k===x.jenis)||{t:x.jenis};return `<div class='panel' style='margin-bottom:12px'><div class='rt'><b>${d.id}</b><span>${x.ts&&x.ts.toDate?x.ts.toDate().toLocaleString('id-ID'):''}</span></div><p><b>${eh(sv.t)}</b><br>${eh(un(x.nama))} | ${eh(un(x.hp))}</p><div class='f'><select id='qs${i}'>${ST.map(t=>`<option ${x.status===t?'selected':''}>${t}</option>`).join('')}</select><p><button class='btn' type='button' data-s='${i}'>Simpan</button><button class='btn alt' type='button' data-c='${i}' style='color:var(--ink)'>Cetak surat</button><button class='btn alt' type='button' data-w='${i}' style='color:var(--ink)'>WhatsApp warga</button><button class='btn alt' type='button' data-x='${i}' style='color:var(--ink)'>Hapus</button></p></div></div>`}).join(''):'<p class="sub">Belum ada permohonan.</p>';
 L.querySelectorAll('[data-s]').forEach(b=>b.onclick=async()=>{const i=b.dataset.s;try{await ds[i].ref.update({status:document.getElementById('qs'+i).value});b.textContent='Tersimpan'}catch(e){alert('Gagal menyimpan.')}});
 L.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const x=ds[b.dataset.c].data(),sv=SV.find(z=>z.k===x.jenis);if(!sv)return;const v={};Object.entries(x.data||{}).forEach(([k,val])=>v[k]=eh(un(String(val)).slice(0,300)));showLetter(sv,v);['kr','ed'].forEach(id=>{const e=document.getElementById(id);if(e)e.remove()})});
-L.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const i=b.dataset.w,x=ds[i].data(),st=document.getElementById('qs'+i).value;window.open('https://wa.me/'+waNum(un(x.hp))+'?text='+encodeURIComponent('Halo, permohonan surat Anda (kode '+ds[i].id+') statusnya: '+st+'. Terima kasih. Pemerintah Desa Padamara'),'_blank')});
+L.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const i=b.dataset.w,x=ds[i].data(),st=document.getElementById('qs'+i).value;window.open('https://wa.me/'+waNum(un(x.hp))+'?text='+encodeURIComponent(pesanStatus(ds[i].id,st)),'_blank')});
 L.querySelectorAll('[data-x]').forEach(b=>b.onclick=async()=>{if(!confirm('Hapus permohonan ini?'))return;try{await ds[b.dataset.x].ref.delete();panelPm()}catch(e){alert('Gagal menghapus.')}})}
+
+/* ===== ISI OTOMATIS DARI PENGIRIMAN SEBELUMNYA (disimpan di perangkat warga) ===== */
+const PKEY='pdm_profiles';
+const getP=()=>{try{return JSON.parse(localStorage.getItem(PKEY)||'[]')}catch(e){return[]}};
+function saveProfile(v){if(window._afs===false)return;const p={};BASE.forEach(f=>{if(v[f[0]])p[f[0]]=un(v[f[0]])});if(!p.nama)return;const a=getP().filter(x=>String(x.nama).toLowerCase()!==p.nama.toLowerCase());a.unshift(p);try{localStorage.setItem(PKEY,JSON.stringify(a.slice(0,8)))}catch(e){}}
+function afInit(k){const form=document.getElementById('sf');if(!form)return;
+const fillAny=o=>Object.keys(o).forEach(id=>{const el=document.getElementById('f_'+id);if(el&&o[id]!=null&&o[id]!=='')el.value=o[id]});
+if(window._lv&&window._lv.k===k){const o={};Object.keys(window._lv.v).forEach(id=>o[id]=un(window._lv.v[id]));fillAny(o)}
+form.insertAdjacentHTML('beforebegin',"<div class='sub' id='afc'></div>");
+const c=document.getElementById('afc'),nm=document.getElementById('f_nama');nm.setAttribute('list','dlnama');nm.setAttribute('autocomplete','off');
+form.insertAdjacentHTML('afterbegin',`<datalist id='dlnama'>${getP().map(p=>`<option value="${eh(p.nama)}">`).join('')}</datalist>`);
+const draw=()=>{const a=getP();c.innerHTML=(a.length?'Data tersimpan di perangkat ini, ketuk untuk mengisi: '+a.map((p,i)=>`<button type='button' class='btn alt' data-p='${i}' style='color:var(--ink);padding:5px 10px;margin:4px 6px 4px 0'>${eh(p.nama)}</button>`).join('')+"<button type='button' class='btn alt' id='afd' style='color:var(--ink);padding:5px 10px;margin:4px 6px 4px 0'>Hapus data tersimpan</button>":'')+"<button type='button' class='btn alt' id='afk' style='color:var(--ink);padding:5px 10px;margin:4px 0'>Kosongkan isian</button>";
+c.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>fillAny(getP()[b.dataset.p]));
+const d=document.getElementById('afd');if(d)d.onclick=()=>{try{localStorage.removeItem(PKEY)}catch(e){}document.getElementById('dlnama').innerHTML='';draw()};
+document.getElementById('afk').onclick=()=>form.reset()};
+draw();
+nm.addEventListener('input',()=>{const m=getP().find(p=>String(p.nama).toLowerCase()===nm.value.trim().toLowerCase());if(m)fillAny(m)});
+form.querySelector('button[type=submit]').insertAdjacentHTML('beforebegin',"<label style='display:block;margin-top:12px;font-weight:400;font-size:14px'><input type='checkbox' id='afs' checked style='width:auto'> Simpan data saya di perangkat ini agar pengisian berikutnya otomatis (hapus bila memakai HP bersama)</label>");
+form.addEventListener('submit',()=>{window._afs=document.getElementById('afs').checked},true)}
+function pgFill(){const f=document.getElementById('fm');let s={};try{s=JSON.parse(localStorage.getItem('pdm_pgd')||'{}')}catch(e){}
+if(s.nama&&!f.elements.nama.value)f.elements.nama.value=s.nama;if(s.kontak&&!f.elements.kontak.value)f.elements.kontak.value=s.kontak;
+let n=document.getElementById('pgn');if(!n){f.querySelector('button[type=submit]').insertAdjacentHTML('beforebegin',"<label style='display:block;margin-top:10px;font-size:14px;font-weight:400'><input type='checkbox' id='pgs' checked style='width:auto'> Ingat nama dan kontak saya di perangkat ini</label><p class='sub' id='pgn'></p>");n=document.getElementById('pgn')}
+n.innerHTML=(s.nama||s.kontak)?'Terisi dari pengiriman sebelumnya. Ubah, atau <a href="#" id="pgx">hapus data tersimpan</a>.':'';
+const x=document.getElementById('pgx');if(x)x.onclick=e=>{e.preventDefault();try{localStorage.removeItem('pdm_pgd')}catch(_){}f.elements.nama.value='';f.elements.kontak.value='';n.textContent='Data tersimpan dihapus.'}}
+pgFill();
 })();
 </script>
 </body>

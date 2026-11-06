@@ -654,7 +654,7 @@ let faceReady=null;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const med=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
 const d2=(a,b)=>Math.sqrt(a.reduce((s,x,i)=>s+(x-b[i])*(x-b[i]),0));
-const FO=()=>new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:.5});
+const FO=()=>new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:.4});
 function loadFace(){if(faceReady)return faceReady;
 faceReady=new Promise((res,rej)=>{const go=async()=>{try{await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS),faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS),faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS)]);res()}catch(e){rej(e)}};
 if(window.faceapi)return go();const s=document.createElement('script');s.src=FACE_LIB;s.onload=go;s.onerror=()=>rej(new Error('lib'));document.head.appendChild(s)});
@@ -666,53 +666,52 @@ const out=[];let id,done=false,t;
 const fin=()=>{if(done)return;done=true;navigator.geolocation.clearWatch(id);clearTimeout(t);out.length?res(out):rej(new Error('Lokasi tidak dapat diambil. Aktifkan GPS dan izinkan lokasi untuk situs ini.'))};
 id=navigator.geolocation.watchPosition(p=>{out.push({la:p.coords.latitude,ln:p.coords.longitude,ac:p.coords.accuracy,ts:p.timestamp,now:Date.now()});if(out.length>=6)fin()},e=>{if(!out.length&&!done){done=true;clearTimeout(t);navigator.geolocation.clearWatch(id);rej(new Error('Lokasi tidak dapat diambil. Aktifkan GPS dan izinkan lokasi untuk situs ini.'))}},{enableHighAccuracy:true,maximumAge:0,timeout:15000});
 t=setTimeout(fin,ms)})}
-async function gpsVerify(){const S=await gpsSamples(8000),flags=[];
+async function gpsVerify(){const S=await gpsSamples(6000),flags=[];
 const best=Math.min(...S.map(s=>s.ac));
 if(!(best>0))throw new Error('Data GPS tidak valid. Matikan aplikasi lokasi palsu bila ada, lalu coba lagi.');
-if(best>80)throw new Error('Akurasi GPS terlalu rendah ('+Math.round(best)+' m). Pindah ke tempat terbuka dan aktifkan lokasi presisi tinggi.');
+if(best>200)throw new Error('Akurasi GPS terlalu rendah ('+Math.round(best)+' m). Pindah ke dekat jendela atau tempat terbuka lalu coba lagi.');
 if(S.some(s=>Math.abs(s.now-s.ts)>20000))throw new Error('Data lokasi tidak segar. Coba lagi.');
 const la=med(S.map(s=>s.la)),ln=med(S.map(s=>s.ln));
 if(Math.max(...S.map(s=>dist(la,ln,s.la,s.ln)))>150)throw new Error('Lokasi berpindah tidak wajar selama pengukuran. Coba lagi dalam keadaan diam.');
 const dec=x=>(String(x).split('.')[1]||'').length;
 if(dec(S[0].la)<=4&&dec(S[0].ln)<=4)flags.push('koordinat dibulatkan');
 if(S.length>=4&&S.every(s=>s.la===S[0].la&&s.ln===S[0].ln))flags.push('koordinat identik');
-if(S.length<3)flags.push('sampel GPS sedikit');
+if(S.length<3)flags.push('sampel GPS sedikit');if(best>80)flags.push('akurasi GPS rendah');
 return{la,ln,ac:Math.round(best),n:S.length,flags}}
 async function skewOk(){try{const r=await fetch(location.pathname,{method:'HEAD',cache:'no-store'});const d=r.headers.get('Date');if(!d)return true;return Math.abs(Date.now()-Date.parse(d))<120000}catch(e){return true}}
 async function captureFace(v,say,ab){
 const chk=()=>{if(ab.stop)throw new Error('Dibatalkan.')};
 const one=()=>faceapi.detectAllFaces(v,FO()).withFaceLandmarks();
 say('Hadapkan wajah lurus ke kamera, di dalam lingkaran.');
-let ok=0,base=0,t0=Date.now();
-while(ok<6){chk();if(Date.now()-t0>25000)throw new Error('Wajah tidak terdeteksi. Pastikan cahaya cukup dan hanya satu wajah terlihat.');
+let ok=0,base=0,t0=Date.now(),bs=[];
+while(ok<3){chk();if(Date.now()-t0>40000)throw new Error('Wajah tidak terdeteksi. Pastikan cahaya cukup dan hanya satu wajah terlihat.');
 const fs=await one();
 if(fs.length>1){ok=0;say('Hanya satu wajah yang boleh terlihat.')}
 else if(fs.length===1){const g=geo(fs[0],v);
-if(g.size<.26){ok=0;say('Dekatkan wajah ke kamera.')}
+if(g.size<.18){ok=0;say('Dekatkan wajah ke kamera.')}
 else if(g.size>.85){ok=0;say('Jauhkan sedikit wajah dari kamera.')}
-else if(Math.abs(g.yaw-.5)>.09||Math.abs(g.cx-.5)>.22){ok=0;say('Hadapkan wajah lurus ke kamera.')}
-else{ok++;base=Math.max(base,g.ear);say('Bagus, tahan sebentar...')}}
+else if(Math.abs(g.yaw-.5)>.16||Math.abs(g.cx-.5)>.32){ok=0;say('Hadapkan wajah lurus ke kamera.')}
+else{ok++;bs.push(g.ear);base=med(bs.slice(-8));say('Bagus, tahan sebentar...')}}
 else{ok=0;say('Wajah belum terdeteksi.')}
 await sleep(60)}
 if(!(base>.15))throw new Error('Mata tidak terbaca jelas. Lepas kacamata hitam atau masker, lalu coba lagi.');
-const list=['kedip','kanan','kiri'].sort(()=>Math.random()-.5).slice(0,2);
-const txt={kedip:'Kedipkan mata Anda.',kanan:'Tengok perlahan ke kanan.',kiri:'Tengok perlahan ke kiri.'};
+const list=[Math.random()<.5?'kedip':'tengok'];
+const txt={kedip:'Kedipkan mata Anda sekali.',tengok:'Tengokkan kepala sedikit ke kiri atau ke kanan.'};
 for(const c of list){say(txt[c]);let done=false,closed=false;t0=Date.now();
-while(!done){chk();if(Date.now()-t0>10000)throw new Error('Gerakan yang diminta tidak terdeteksi. Coba lagi.');
+while(!done){chk();if(Date.now()-t0>15000)throw new Error('Gerakan yang diminta tidak terdeteksi. Coba lagi.');
 const fs=await one();if(fs.length!==1){await sleep(60);continue}
 const g=geo(fs[0],v);
-if(c==='kedip'){if(g.ear<base*.78)closed=true;else if(closed&&g.ear>base*.88)done=true}
-else if(c==='kanan'){if(g.yaw<.36)done=true}
-else{if(g.yaw>.64)done=true}
+if(c==='kedip'){if(g.ear<base*.86)closed=true;else if(closed&&g.ear>base*.92)done=true}
+else{if(g.yaw<.41||g.yaw>.59)done=true}
 await sleep(40)}
 say('Baik.');await sleep(250)}
 say('Hadapkan wajah lurus, tahan dan jangan bergerak...');
 const ds=[];t0=Date.now();
-while(ds.length<3){chk();if(Date.now()-t0>15000)throw new Error('Wajah tidak terbaca jelas. Coba lagi dengan cahaya lebih terang.');
+while(ds.length<3){chk();if(Date.now()-t0>25000)throw new Error('Wajah tidak terbaca jelas. Coba lagi dengan cahaya lebih terang.');
 const fs=await faceapi.detectAllFaces(v,FO()).withFaceLandmarks().withFaceDescriptors();
-if(fs.length===1){const g=geo(fs[0],v);if(g.size>.26&&g.size<.85&&Math.abs(g.yaw-.5)<.1){ds.push(Array.from(fs[0].descriptor));await sleep(180);continue}}
+if(fs.length===1){const g=geo(fs[0],v);if(g.size>.18&&g.size<.9&&Math.abs(g.yaw-.5)<.16){ds.push(Array.from(fs[0].descriptor));await sleep(180);continue}}
 await sleep(60)}
-if(d2(ds[0],ds[2])>.45)throw new Error('Wajah berubah selama verifikasi. Coba lagi.');
+if(d2(ds[0],ds[2])>.6)throw new Error('Wajah berubah selama verifikasi. Coba lagi.');
 const avg=ds[0].map((_,i)=>(ds[0][i]+ds[1][i]+ds[2][i])/3);
 const c=document.createElement('canvas');const w=320,h=Math.round(w*(v.videoHeight||480)/(v.videoWidth||640));c.width=w;c.height=h;c.getContext('2d').drawImage(v,0,0,w,h);
 return{desc:avg,foto:c.toDataURL('image/jpeg',.6),tantangan:list}}
@@ -745,7 +744,7 @@ document.getElementById('abx').onclick=()=>{ab.stop=true};
 const R=Number(cfg.radius)||150;
 try{
 say('Memeriksa jam perangkat...');if(!await skewOk())throw new Error('Jam perangkat tidak sesuai waktu server. Aktifkan pengaturan waktu otomatis.');
-say('Mengambil lokasi GPS, tunggu sekitar 8 detik dan jangan berpindah...');const gp=await gpsVerify();
+say('Mengambil lokasi GPS, tunggu sekitar 6 detik...');const gp=await gpsVerify();
 const dj=dist(gp.la,gp.ln,la,ln);
 if(!luar&&dj>R)throw new Error('Anda '+dj+' m dari kantor desa (batas '+R+' m). Centang Dinas luar jika memang bertugas di luar.');
 say('Menyiapkan verifikasi wajah (pertama kali bisa beberapa detik)...');
